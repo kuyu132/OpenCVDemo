@@ -1,2 +1,2 @@
-include ':app', ':opencvlib'
+include ':app', ':opencvlib', ':cameralib'
 rootProject.name='OpenCVDemo'

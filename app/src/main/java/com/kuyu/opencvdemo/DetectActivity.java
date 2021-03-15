@@ -21,7 +21,7 @@ public class DetectActivity extends AppCompatActivity implements CameraBridgeVie
 
     // 手动装载openCV库文件，以保证手机无需安装OpenCV Manager
     static {
-        System.loadLibrary("opencv_java4");
+        System.loadLibrary("native-lib");
     }
 
     private JavaCameraView mCameraView;
@@ -102,8 +102,9 @@ public class DetectActivity extends AppCompatActivity implements CameraBridgeVie
                     new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
         Rect[] facesArray = faces.toArray();
         Scalar faceRectColor = new Scalar(0, 255, 0, 255);
-        for (Rect faceRect : facesArray)
+        for (Rect faceRect : facesArray){
             Imgproc.rectangle(mRgba, faceRect.tl(), faceRect.br(), faceRectColor, 3);
+        }
         return mRgba;
     }
 
