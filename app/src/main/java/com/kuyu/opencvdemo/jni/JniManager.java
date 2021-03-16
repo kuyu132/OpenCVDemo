@@ -5,4 +5,6 @@ public class JniManager {
     static {
         System.loadLibrary("native-lib");
     }
+
+    public native void init(String path);
 }
