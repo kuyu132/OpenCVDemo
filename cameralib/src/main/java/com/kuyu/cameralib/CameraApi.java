@@ -17,8 +17,8 @@ import java.util.List;
 public class CameraApi implements Camera.PreviewCallback {
     private static final String TAG = "CameraApi";
     private static volatile CameraApi CAMERA_INSTANCE = null;
-    public static final int CAMERA_INDEX_BACK = 0;
-    public static final int CAMERA_INDEX_FRONT = 1;
+    public static final int CAMERA_INDEX_FRONT = 0;
+    public static final int CAMERA_INDEX_BACK = 1;
     private final int DEFAULT_FPS = 30;
     private final int DEFAULT_PREVIEW_WIDTH = 1920;
     private final int DEFAULT_PREVIEW_HEIGHT = 1080;
@@ -104,6 +104,11 @@ public class CameraApi implements Camera.PreviewCallback {
             }
             mCamera = Camera.open(mCameraId);
             cameraApiCallback.onCameraInit(mCamera);
+            Camera.Parameters parameters = mCamera.getParameters();
+            List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
+            for (Camera.Size size : sizeList) {
+                Log.i("opencvdemo", "分辨率：" + size.width + " " + size.height);
+            }
         }
     }
 

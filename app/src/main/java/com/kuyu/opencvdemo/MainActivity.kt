@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         tv_activity3.setOnClickListener{
             startActivity(Intent(this@MainActivity, OpenCVActivity3::class.java));
         }
-        requestPermission()
+//        requestPermission()
     }
 
     private fun requestPermission() {
