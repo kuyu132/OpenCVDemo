@@ -73,7 +73,7 @@ public class MainActivity2 extends AppCompatActivity implements SurfaceHolder.Ca
     public void surfaceCreated(SurfaceHolder holder) {
         if (isCheckPermissionOk) {
             Log.e(TAG, "surfaceCreated: ");
-            CameraApi.getInstance().setCameraId(CameraApi.CAMERA_INDEX_BACK);
+            CameraApi.getInstance().setCameraId(Camera.CameraInfo.CAMERA_FACING_BACK);
             CameraApi.getInstance().initCamera(this, this);
             CameraApi.getInstance().setPreviewSize(new Size(previewWidth, previewHeight));
             CameraApi.getInstance().setFps(30).configCamera();

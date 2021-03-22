@@ -17,8 +17,8 @@ import java.util.List;
 public class CameraApi implements Camera.PreviewCallback {
     private static final String TAG = "CameraApi";
     private static volatile CameraApi CAMERA_INSTANCE = null;
-    public static final int CAMERA_INDEX_FRONT = 0;
-    public static final int CAMERA_INDEX_BACK = 1;
+//    public static final int CAMERA_INDEX_FRONT = 0;
+//    public static final int CAMERA_INDEX_BACK = 1;
     private final int DEFAULT_FPS = 30;
     private final int DEFAULT_PREVIEW_WIDTH = 1920;
     private final int DEFAULT_PREVIEW_HEIGHT = 1080;
@@ -27,7 +27,7 @@ public class CameraApi implements Camera.PreviewCallback {
      */
     private final int BUFFER_COUNT = 5;
 
-    private int mCameraId = CAMERA_INDEX_BACK;
+    private int mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private int mPreviewWidth = DEFAULT_PREVIEW_WIDTH;
     private int mPreviewHeight = DEFAULT_PREVIEW_HEIGHT;
     private int fps = DEFAULT_FPS;
@@ -111,7 +111,6 @@ public class CameraApi implements Camera.PreviewCallback {
             }
         }
     }
-
 
     public synchronized CameraApi configCamera() {
         if (mCamera == null) {

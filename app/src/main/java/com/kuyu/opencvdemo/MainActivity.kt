@@ -3,14 +3,20 @@ package com.kuyu.opencvdemo
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Camera
+import android.hardware.Camera.CameraInfo
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.kuyu.opencvdemo.jni.FileUtils
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    val faceFileName = "lbpcascade_frontalface.xml"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,9 +25,10 @@ class MainActivity : AppCompatActivity() {
         tv_activity2.setOnClickListener {
             startActivity(Intent(this@MainActivity, MainActivity2::class.java))
         }
-        tv_activity3.setOnClickListener{
+        tv_activity3.setOnClickListener {
             startActivity(Intent(this@MainActivity, OpenCVActivity3::class.java));
         }
+        FileUtils.copyFileToData(this, faceFileName)
 //        requestPermission()
     }
 

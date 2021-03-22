@@ -1,6 +1,7 @@
 #include <jni.h>
 #include "opencv2/opencv.hpp"
 #include <android/log.h>
+#include <android//native_window_jni.h>
 
 using namespace cv;
 
@@ -8,6 +9,7 @@ using namespace cv;
 #define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
 
 DetectionBasedTracker *tracker;
+ANativeWindow *window = nullptr;
 
 class CascadeDetectorAdapter : public DetectionBasedTracker::IDetector {
 public:
@@ -58,7 +60,6 @@ Java_com_kuyu_opencvdemo_jni_JniManager_init(JNIEnv *env, jobject instance, jstr
     tracker = new DetectionBasedTracker(mainDetector, trackingDetector, parameters);
     tracker->run();
 
-
     env->ReleaseStringUTFChars(path_, path);
 }
 
@@ -72,9 +73,68 @@ Java_com_kuyu_opencvdemo_jni_JniManager_postData(JNIEnv *env, jobject instance, 
     //src->bitmap
     Mat src(height + height / 2, width, CV_8UC1, data);
     //nv21->rgba
-    cvtColor(src, src, COLOR_YUV2RGBA_NV21);
+    cvtColor(src, src, COLOR_YUV2RGB_NV21);
     //输出图片
-    imwrite("/sdcard/src.jpg", src);
+    imwrite("/data/user/0/com.kuyu.opencvdemo/files/src.jpg", src);
     LOGD("postData call success");
+    //0:后置摄像头，1:前置摄像头
+//    if (cameraId == 1) {
+//        //逆时针旋转
+//        rotate(src, src, ROTATE_90_COUNTERCLOCKWISE);
+//        //翻转：1水平翻转，0垂直翻转
+//        flip(src, src, 1);
+//    } else {
+//        rotate(src, src, ROTATE_90_CLOCKWISE);
+//    }
+    //人脸识别,转成灰度图
+    Mat gray;
+    cvtColor(src, gray, COLOR_RGBA2GRAY);
+    imwrite("/data/user/0/com.kuyu.opencvdemo/files/src4.jpg", gray);
+    //增强对比度，增强轮廓，二值化
+    equalizeHist(gray, gray);
+    //检测人脸
+    std::vector<Rect> faces;
+    tracker->process(gray);
+    tracker->getObjects(faces);
+    for (Rect face:  faces) {
+        rectangle(src, face, Scalar(255, 0, 255));
+        LOGD("detect face already");
+    }
+    if (window) {
+        ANativeWindow_setBuffersGeometry(window, src.cols, src.rows, WINDOW_FORMAT_RGBA_8888);
+        ANativeWindow_Buffer windowBuffer;
+        do {
+            //lock失败直接break出去
+            if (ANativeWindow_lock(window, &windowBuffer, 0)) {
+                ANativeWindow_release(window);
+                window = nullptr;
+                break;
+            }
+            //src.data: rgba的数据拷贝到buffer.bits中，一行一行的拷贝
+            //填充rgb数据给dst_data
+            uint8_t *dst_data = static_cast<uint8_t *>(windowBuffer.bits);
+            //stride: 一行多少个数据（RGBA）*4
+            int dst_line_size = windowBuffer.stride * 4;
+            //一行一行的拷贝
+            for (int i = 0; i < windowBuffer.height; ++i) {
+                memcpy(dst_data + i * dst_line_size, src.data + i * src.cols * 4, dst_line_size);
+            }
+            //提交刷新
+            ANativeWindow_unlockAndPost(window);
+        } while (0);
+    }
+    src.release();
+    gray.release();
     env->ReleaseByteArrayElements(data_, data, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_kuyu_opencvdemo_jni_JniManager_setSurface(JNIEnv *env, jobject thiz, jobject surface) {
+    if (window) {
+        ANativeWindow_release(window);
+        window = nullptr;
+    }
+    LOGD("call setSurface true");
+    window = ANativeWindow_fromSurface(env, surface);
 }

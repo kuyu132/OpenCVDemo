@@ -19,25 +19,26 @@ class OpenCVActivity3 : AppCompatActivity() {
     private val previewWidth = 1920
     private val previewHeight = 1080
     private var ratio = 0f
-    private var mSurfaceViewWidth = 0
-    private var mSurfaceViewHeight = 0
-    private val cameraId = CameraApi.CAMERA_INDEX_FRONT
+    private var mSurfaceViewWidth = previewWidth
+    private var mSurfaceViewHeight = previewHeight
+    private val cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_opencv3)
         initViews()
+
     }
 
     private fun initViews() {
         val size = Point()
-        val display = windowManager.defaultDisplay
-        display.getRealSize(size)
-        mSurfaceViewWidth = size.x
-        mSurfaceViewHeight = size.y
+//        val display = windowManager.defaultDisplay
+//        display.getRealSize(size)
+//        mSurfaceViewWidth = size.x
+//        mSurfaceViewHeight = size.y
         btn_switch_camera.setOnClickListener {}
         surface_view.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(holder: SurfaceHolder?) {
+            override fun surfaceCreated(holder: SurfaceHolder) {
                 initCamera()
             }
 
@@ -45,7 +46,10 @@ class OpenCVActivity3 : AppCompatActivity() {
                 ratio = previewWidth / previewHeight.toFloat()
                 holder?.let {
                     CameraApi.getInstance().startPreview(it)
-                    val path = File(Environment.getExternalStorageDirectory(), "lbpcascade_frontalface.xml").absolutePath
+                    val faceFileName = "lbpcascade_frontalface.xml"
+                    val path = this@OpenCVActivity3.filesDir.absolutePath + File.separator + faceFileName
+//                    val path = File(Environment.getExternalStorageDirectory(), "lbpcascade_frontalface.xml").absolutePath
+                    jniManager.setSurface(holder.surface);
                     jniManager.init(path)
                 }
             }
@@ -56,7 +60,7 @@ class OpenCVActivity3 : AppCompatActivity() {
         })
     }
 
-    private fun initCamera(){
+    private fun initCamera() {
         CameraApi.getInstance().setCameraId(cameraId)
         CameraApi.getInstance().setPreviewSize(Size(previewWidth, previewHeight))
         CameraApi.getInstance().initCamera(this@OpenCVActivity3, callback)
