@@ -68,24 +68,24 @@ JNIEXPORT void JNICALL
 Java_com_kuyu_opencvdemo_jni_JniManager_postData(JNIEnv *env, jobject instance, jbyteArray data_,
                                                  jint width, jint height, jint cameraId) {
     //NV21数据->Bitmap->Mat
-    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
     //yuv的宽高计算方式
     //src->bitmap
     Mat src(height + height / 2, width, CV_8UC1, data);
     //nv21->rgba
-    cvtColor(src, src, COLOR_YUV2RGB_NV21);
+    cvtColor(src, src, COLOR_YUV2RGBA_NV21);
     //输出图片
     imwrite("/data/user/0/com.kuyu.opencvdemo/files/src.jpg", src);
     LOGD("postData call success");
     //0:后置摄像头，1:前置摄像头
-//    if (cameraId == 1) {
-//        //逆时针旋转
+    if (cameraId == 1) {
+        //逆时针旋转
 //        rotate(src, src, ROTATE_90_COUNTERCLOCKWISE);
-//        //翻转：1水平翻转，0垂直翻转
-//        flip(src, src, 1);
-//    } else {
-//        rotate(src, src, ROTATE_90_CLOCKWISE);
-//    }
+        //翻转：1水平翻转，0垂直翻转
+        flip(src, src, 1);
+    } else {
+        rotate(src, src, ROTATE_90_CLOCKWISE);
+    }
     //人脸识别,转成灰度图
     Mat gray;
     cvtColor(src, gray, COLOR_RGBA2GRAY);
@@ -101,15 +101,21 @@ Java_com_kuyu_opencvdemo_jni_JniManager_postData(JNIEnv *env, jobject instance, 
         LOGD("detect face already");
     }
     if (window) {
-        ANativeWindow_setBuffersGeometry(window, src.cols, src.rows, WINDOW_FORMAT_RGBA_8888);
+        int32_t result = ANativeWindow_setBuffersGeometry(window, src.cols, src.rows,WINDOW_FORMAT_RGBA_8888);
+        if (result < 0){
+            ANativeWindow_release(window);
+            window = nullptr;
+            return;
+        }
         ANativeWindow_Buffer windowBuffer;
         do {
             //lock失败直接break出去
-            if (ANativeWindow_lock(window, &windowBuffer, 0)) {
+            if (ANativeWindow_lock(window, &windowBuffer, 0) < 0) {
                 ANativeWindow_release(window);
                 window = nullptr;
                 break;
             }
+            LOGD("window is not nullptr : post data");
             //src.data: rgba的数据拷贝到buffer.bits中，一行一行的拷贝
             //填充rgb数据给dst_data
             uint8_t *dst_data = static_cast<uint8_t *>(windowBuffer.bits);
@@ -137,4 +143,9 @@ Java_com_kuyu_opencvdemo_jni_JniManager_setSurface(JNIEnv *env, jobject thiz, jo
     }
     LOGD("call setSurface true");
     window = ANativeWindow_fromSurface(env, surface);
+    if (window) {
+        LOGD("window is not nullptr");
+    } else {
+        LOGD("window is nullptr");
+    }
 }
